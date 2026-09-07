@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/tls"
+"crypto/x509"
+"net/http"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
@@ -159,8 +162,33 @@ func main() {
 		slog.Error("TG bot error", "err", err)
 		os.Exit(1)
 	}
+roots, err := x509.SystemCertPool()
+if err != nil || roots == nil {
+	roots = x509.NewCertPool()
+}
 
-	maxApi, err := maxbot.New(cfg.MaxToken, maxbot.WithBaseURL(maxAPIBaseURL))
+for _, certPath := range []string{
+	"/usr/local/share/ca-certificates/russian-trusted-ca.crt",
+	"/usr/local/share/ca-certificates/russian-trusted-sub-ca.crt",
+} {
+	pemData, err := os.ReadFile(certPath)
+	if err != nil {
+		slog.Error("read MAX CA", "path", certPath, "err", err)
+		os.Exit(1)
+	}
+	if ok := roots.AppendCertsFromPEM(pemData); !ok {
+		slog.Error("parse MAX CA", "path", certPath)
+		os.Exit(1)
+	}
+}
+
+maxTransport := http.DefaultTransport.(*http.Transport).Clone()
+maxTransport.TLSClientConfig = &tls.Config{
+	RootCAs:    roots,
+	MinVersion: tls.VersionTLS12,
+}
+maxHTTPClient := &http.Client{Transport: maxTransport}
+maxApi, err := maxbot.New(cfg.MaxToken, maxbot.WithBaseURL(maxAPIBaseURL), maxbot.WithHTTPClient(maxHTTPClient))
 	if err != nil {
 		slog.Error("MAX bot error", "err", err)
 		os.Exit(1)
