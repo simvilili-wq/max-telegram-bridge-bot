@@ -12,6 +12,8 @@ RUN CGO_ENABLED=1 go build -o /max-telegram-bridge-bot .
 FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates
+COPY russian-trusted-ca.crt /usr/local/share/ca-certificates/russian-trusted-ca.crt
+RUN update-ca-certificates
 RUN adduser -D -h /app bridge
 USER bridge
 WORKDIR /app
