@@ -155,6 +155,19 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	port := envOr("PORT", "10000")
+
+mux := http.NewServeMux()
+mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok"))
+})
+
+go func() {
+	if err := http.ListenAndServe("0.0.0.0:"+port, mux); err != nil {
+		slog.Error("HTTP server error", "err", err)
+	}
+}()
 
 	tgToken := mustEnv("TG_TOKEN")
 	tg, err := NewTGBotSender(ctx, tgToken, cfg.TgAPIURL)
