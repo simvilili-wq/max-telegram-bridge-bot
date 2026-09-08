@@ -1047,6 +1047,7 @@ func (b *Bridge) listenTelegram(ctx context.Context) {
 			b.observeTgMessageAuthor(msg)
 
 			name := b.pairRelayName(ctx, msg.Chat.ID, maxChatID, b.tgRelayName(msg))
+			name = "[TG] " + name
 			caption := formatTgCaptionWithName(msg, name, false, b.cfg.MessageNewline)
 
 			// Проверяем anti-loop
