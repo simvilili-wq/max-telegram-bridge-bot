@@ -2240,6 +2240,7 @@ func (b *Bridge) forwardMaxToTg(ctx context.Context, msgUpd *maxschemes.MessageC
 		} else {
 			// Bridge: caption с атрибуцией — жирное имя
 			name := b.pairRelayName(ctx, tgChatID, chatID, b.maxRelayName(msgUpd))
+			name = "[MAX] " + name
 			htmlCaption = formatAttributionHTML(name, htmlText, b.cfg.MessageNewline)
 		}
 	}
