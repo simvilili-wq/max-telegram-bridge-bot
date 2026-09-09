@@ -1545,6 +1545,7 @@ func (b *Bridge) forwardTgToMax(ctx context.Context, msg *TGMessage, maxChatID i
 		mdCaption = mdText
 	} else {
 		name := b.pairRelayName(ctx, msg.Chat.ID, maxChatID, b.tgRelayName(msg))
+		name = "[TG] " + name
 		mdCaption = formatAttributionHTML(name, mdText, b.cfg.MessageNewline)
 	}
 
