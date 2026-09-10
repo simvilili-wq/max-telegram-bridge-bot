@@ -162,7 +162,31 @@ mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("ok"))
 })
+whatsappVerifyToken := os.Getenv("WHATSAPP_VERIFY_TOKEN")
 
+mux.HandleFunc("/whatsapp/webhook", func(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		mode := r.URL.Query().Get("hub.mode")
+		token := r.URL.Query().Get("hub.verify_token")
+		challenge := r.URL.Query().Get("hub.challenge")
+
+		if mode == "subscribe" && whatsappVerifyToken != "" && token == whatsappVerifyToken {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(challenge))
+			return
+		}
+
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+})
 go func() {
 	if err := http.ListenAndServe("0.0.0.0:"+port, mux); err != nil {
 		slog.Error("HTTP server error", "err", err)
