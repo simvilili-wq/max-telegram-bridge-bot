@@ -180,9 +180,11 @@ mux.HandleFunc("/whatsapp/webhook", func(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if r.Method == http.MethodPost {
-		w.WriteHeader(http.StatusOK)
-		return
+if r.Method == http.MethodPost {
+	slog.Info("WhatsApp webhook POST received")
+	w.WriteHeader(http.StatusOK)
+	return
+
 	}
 
 	http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
